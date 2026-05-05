@@ -790,6 +790,16 @@ function render(){
   }
 
   wire();
+   if(isMobileDetails.matches && activeMobileOrderId !== null){
+    const activeOrder = load().find(o => Number(o.id) === Number(activeMobileOrderId));
+    if(activeOrder){
+      openMobileDrawer(activeOrder);
+      const activeToggle = document.querySelector(`[data-toggle="${activeMobileOrderId}"]`);
+      if(activeToggle) activeToggle.textContent = "-";
+    } else {
+      closeMobileDrawer();
+    }
+  }
 }
 
 function teacherPanel(order){
@@ -964,10 +974,14 @@ function wire(){
   document.querySelectorAll("[data-teacher-save]").forEach(btn => {
     btn.onclick = () => {
       const id = Number(btn.dataset.teacherSave);
-      const action = document.querySelector(`[data-teacher="${id}"]`).value;
+      const scope = btn.closest(".panel") || btn.closest(".mobile-drawer") || btn.closest(".detailsbox") || document;
+      const select = scope.querySelector(`[data-teacher="${id}"]`) || document.querySelector(`[data-teacher="${id}"]`);
+      if(!select) return;
+      const action = select.value;
       if(!action) return;
       const data = load();
       const order = data.find(o => Number(o.id) === id);
+       if(!order) return;
       order.status = action;
       order.closed = true;
       addEvent(order, order.name, action);
@@ -982,11 +996,17 @@ const overlay = document.getElementById("mobileDrawerOverlay");
   document.querySelectorAll("[data-mt-save]").forEach(btn => {
     btn.onclick = () => {
       const id = Number(btn.dataset.mtSave);
-      const status = document.querySelector(`[data-status="${id}"]`).value;
-      const eta = document.querySelector(`[data-eta="${id}"]`).value.trim();
-      const freeNote = document.querySelector(`[data-note="${id}"]`).value.trim();
+      const scope = btn.closest(".panel") || btn.closest(".mobile-drawer") || btn.closest(".detailsbox") || document;
+      const statusEl = scope.querySelector(`[data-status="${id}"]`) || document.querySelector(`[data-status="${id}"]`);
+      const etaEl = scope.querySelector(`[data-eta="${id}"]`) || document.querySelector(`[data-eta="${id}"]`);
+      const noteEl = scope.querySelector(`[data-note="${id}"]`) || document.querySelector(`[data-note="${id}"]`);
+      if(!statusEl || !etaEl || !noteEl) return;
+      const status = statusEl.value;
+      const eta = etaEl.value.trim();
+      const freeNote = noteEl.value.trim();
       const data = load();
       const order = data.find(o => Number(o.id) === id);
+       if(!order) return;
       const changes = [];
 
       if(status !== order.status){
