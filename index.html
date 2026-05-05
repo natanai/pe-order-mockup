@@ -251,8 +251,12 @@
   .controlgrid button{
     min-width:0;
     width:100%;
+    max-width:100%;
   }
-  @media(max-width:640px){
+  .controlgrid select{
+    text-overflow:ellipsis;
+  }
+  @media(max-width:760px){
     .detailsbox{padding:6px;}
     .controlgrid{grid-template-columns:1fr;}
     .controlgrid .wide{grid-column:auto;}
@@ -754,7 +758,10 @@ function teacherPanel(order){
       <h2>teacher update</h2>
       <div class="controlgrid">
         <select data-teacher="${order.id}">
-          ${teacherActions.map(a => `<option>${esc(a)}</option>`).join("")}
+          ${teacherActions.map(a => {
+            const label = a === "teacher purchased themselves" ? "purchased themselves" : (a === "no longer needed" ? "no longer needed" : "");
+            return `<option value="${escAttr(a)}">${esc(label)}</option>`;
+          }).join("")}
         </select>
         <button class="warn wide" data-teacher-save="${order.id}">save</button>
       </div>
