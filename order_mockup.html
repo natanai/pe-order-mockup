@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Queue - Raw Mockup v10</title>
+<style>
+  :root{
+    --bg:#090c10;
+    --panel:#11161d;
+    --panel2:#151b23;
+    --panel3:#0d1117;
+    --line:#2b3642;
+    --line2:#3d4855;
+    --text:#d8dee9;
+    --muted:#8b949e;
+    --blue:#58a6ff;
+    --green:#44d07b;
+    --yellow:#f2cc60;
+    --orange:#ff9f43;
+    --red:#ff6b6b;
+    --purple:#b083ff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Consolas,"Courier New",monospace;
+    font-size:12px;
+  }
+  header{
+    background:#07090c;
+    border-bottom:1px solid var(--line);
+    padding:8px 10px;
+  }
+  .wrap{max-width:1240px;margin:0 auto;}
+  .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  h1{
+    margin:0;
+    font-size:14px;
+    letter-spacing:.02em;
+  }
+  .main{padding:8px 10px 28px;}
+  button,input,select{
+    font:inherit;
+    border-radius:0;
+    border:1px solid var(--line2);
+    background:#0f141a;
+    color:var(--text);
+    height:26px;
+    padding:4px 6px;
+  }
+  button{
+    cursor:pointer;
+    font-weight:700;
+    text-transform:uppercase;
+  }
+  button:hover{background:#1b242e}
+  button.primary{background:var(--blue);border-color:var(--blue);color:#000}
+  button.warn{background:var(--yellow);border-color:var(--yellow);color:#000}
+  button.good{background:var(--green);border-color:var(--green);color:#000}
+  button.bad{background:var(--red);border-color:var(--red);color:#000}
+  button.icon{width:28px;padding:0;text-align:center}
+  button.active{background:var(--blue);color:#000;border-color:var(--blue)}
+  input,select{width:100%}
+  input::placeholder{color:#66707c}
+  .thselect{
+    margin-top:3px;
+    height:21px;
+    padding:1px 3px;
+    font-size:10px;
+    color:var(--text);
+    background:#0b0f14;
+  }
+  .submit{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:6px;
+    margin-bottom:8px;
+  }
+  .submit form{
+    display:grid;
+    grid-template-columns:140px 80px minmax(220px,1fr) 52px;
+    gap:4px;
+  }
+  @media(max-width:720px){
+    .submit form{grid-template-columns:1fr 70px}
+    #item{grid-column:1 / -1}
+    .submit button{grid-column:1 / -1}
+  }
+  .modebar{
+    display:flex;
+    gap:4px;
+    align-items:center;
+  }
+  .tiny{color:var(--muted)}
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    margin:6px 0 8px;
+  }
+  .stats b{color:var(--text)}
+  .admin{
+    display:none;
+    border:1px solid var(--line);
+    background:#0d1117;
+    padding:8px;
+    margin-bottom:8px;
+  }
+  .admin.open{display:block}
+  .admin-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:4px;
+    margin-bottom:8px;
+  }
+  @media(max-width:900px){.admin-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:540px){.admin-grid{grid-template-columns:repeat(2,1fr)}}
+  .metric{
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:6px;
+  }
+  .metric b{
+    display:block;
+    font-size:20px;
+    color:#fff;
+  }
+  .metric .label{
+    color:var(--muted);
+    text-transform:uppercase;
+    font-size:10px;
+  }
+  table{
+    width:100%;
+    table-layout:fixed;
+    border-collapse:collapse;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  col.c-toggle{width:34px}
+  col.c-id{width:54px}
+  col.c-item{width:auto}
+  col.c-name{width:110px}
+  col.c-room{width:92px}
+  col.c-status{width:165px}
+  col.c-eta{width:82px}
+  col.c-placed{width:112px}
+  col.c-updated{width:112px}
+  col.c-flag{width:118px}
+  col.c-mt{width:42px}
+  th,td{
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:4px 5px;
+    vertical-align:middle;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  th{
+    background:#0f141a;
+    color:var(--muted);
+    font-size:10px;
+    text-transform:uppercase;
+    text-align:left;
+  }
+  tr.req:hover td{background:#17202a}
+  td.item{
+    white-space:normal;
+    min-width:260px;
+    color:#fff;
+    font-weight:700;
+  }
+  .id{color:var(--muted);width:50px}
+  .status{
+    font-weight:700;
+    text-transform:uppercase;
+  }
+  .s-new{color:var(--blue)}
+  .s-identified{color:var(--purple)}
+  .s-approvals{color:var(--yellow)}
+  .s-ordered{color:var(--orange)}
+  .s-eta{color:var(--blue)}
+  .s-ready{color:var(--green)}
+  .s-fulfilled{color:var(--green)}
+  .s-denied{color:var(--red)}
+  .s-closed{color:var(--muted)}
+  .ageflag{font-weight:700}
+  .age-open{color:var(--yellow)}
+  .age-good{color:var(--green)}
+  .age-bad{color:var(--red)}
+  .details td{
+    background:var(--panel3);
+    padding:0;
+    overflow:visible;
+    white-space:normal;
+  }
+  .detailsbox{
+    display:none;
+    padding:8px;
+    border-left:3px solid var(--line2);
+  }
+  .details.open .detailsbox{display:block}
+  .grid{
+    display:grid;
+    grid-template-columns:280px 320px 1fr;
+    gap:8px;
+  }
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .panel{
+    border:1px solid var(--line);
+    background:var(--panel2);
+    padding:6px;
+  }
+  .panel h2{
+    margin:0 0 6px;
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .controlgrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px;
+  }
+  .controlgrid .wide{grid-column:1 / -1}
+  .history{
+    max-height:150px;
+    overflow:auto;
+    border:1px solid var(--line);
+    background:#07090c;
+  }
+  .event{
+    border-bottom:1px solid #1d252e;
+    padding:4px 5px;
+    white-space:normal;
+  }
+  .event:last-child{border-bottom:0}
+  .time{color:var(--muted)}
+  .who{color:var(--blue)}
+  .admin-table{
+    margin-top:6px;
+  }
+  .admin-table td.item{min-width:180px}
+  .hidden{display:none!important}
+  @media(max-width:760px){
+    th:nth-child(7),td:nth-child(7),
+    th:nth-child(8),td:nth-child(8){display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <h1>product_queue.mock</h1>
+    <div class="modebar">
+      <button id="queueBtn" class="active">queue</button>
+      <button id="adminBtn">admin</button>
+      <span id="lockState" class="tiny">mt locked</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap main">
+  <section class="submit">
+    <form id="newForm" autocomplete="off">
+      <input id="name" placeholder="name" required>
+      <input id="room" placeholder="room" required>
+      <input id="item" placeholder="item requested" required>
+      <button class="primary" type="submit">add</button>
+    </form>
+  </section>
+
+  <section id="adminPanel" class="admin">
+    <div class="admin-grid">
+      <div class="metric"><b id="mOpen">0</b><span class="label">open</span></div>
+      <div class="metric"><b id="mNeglect">0</b><span class="label">no update 3d</span></div>
+      <div class="metric"><b id="mFulfilled">0</b><span class="label">fulfilled</span></div>
+      <div class="metric"><b id="mNoNeed">0</b><span class="label">no longer needed</span></div>
+      <div class="metric"><b id="mPurchased">0</b><span class="label">teacher bought</span></div>
+      <div class="metric"><b id="mSuccess">0%</b><span class="label">fulfilled rate</span></div>
+    </div>
+    <div class="tiny">admin view highlights neglected open orders</div>
+  </section>
+
+  <div class="stats">
+    <span>open <b id="openCount">0</b></span>
+    <span>closed <b id="closedCount">0</b></span>
+    <span>stale <b id="staleCount">0</b></span>
+    <span>today <b id="todayCount">0</b></span>
+  </div>
+
+  <table aria-label="Product request queue">
+    <colgroup>
+      <col class="c-toggle">
+      <col class="c-id">
+      <col class="c-item">
+      <col class="c-name">
+      <col class="c-room">
+      <col class="c-status">
+      <col class="c-eta">
+      <col class="c-placed">
+      <col class="c-updated">
+      <col class="c-flag">
+      <col class="c-mt">
+    </colgroup>
+    <thead>
+      <tr>
+        <th></th>
+        <th>ID</th>
+        <th>Item</th>
+        <th>Name</th>
+        <th>Room<br><select id="roomFilter" class="thselect"><option value="">all</option></select></th>
+        <th>Status</th>
+        <th>ETA</th>
+        <th>Placed</th>
+        <th>Updated</th>
+        <th>Age/Flag</th>
+        <th>MT</th>
+      </tr>
+    </thead>
+    <tbody id="queue"></tbody>
+  </table>
+
+  <div style="margin-top:10px; border:1px solid var(--line); background:var(--panel); padding:6px;">
+    <button id="resetBtn">reset demo</button>
+    <span class="tiny"> reloads fake example rows</span>
+  </div>
+</main>
+
+<script>
+const KEY = "productQueueRawMock.v7";
+const PASSWORD = "22";
+let mtUnlocked = false;
+let adminMode = false;
+let roomFilter = "";
+
+const statuses = [
+  "new",
+  "product identified",
+  "financial approvals",
+  "product ordered",
+  "eta available",
+  "ready for pickup",
+  "fulfilled",
+  "denied"
+];
+
+const teacherActions = [
+  "",
+  "no longer needed",
+  "teacher purchased themselves"
+];
+
+function stamp(){
+  return new Date().toLocaleString([], {
+    year:"numeric", month:"short", day:"numeric",
+    hour:"numeric", minute:"2-digit"
+  });
+}
+function ev(who,text){return {time:stamp(),who,text}}
+function nowISO(){return new Date().toISOString()}
+function today(){return nowISO().slice(0,10)}
+
+function demoISO(date, time){
+  return new Date(date + "T" + time + ":00").toISOString();
+}
+
+function demoStamp(date, time){
+  const d = new Date(date + "T" + time + ":00");
+  return d.toLocaleString([], {
+    year:"numeric", month:"short", day:"numeric",
+    hour:"numeric", minute:"2-digit"
+  });
+}
+
+function seed(){
+  return [
+    {
+      id:301,
+      createdAt:demoISO("2026-05-05","08:40"),
+      item:"glue sticks",
+      name:"Sarah",
+      room:"4",
+      status:"ready for pickup",
+      eta:"today",
+      closed:false,
+      updatedAt:demoISO("2026-05-05","10:15"),
+      events:[
+        {time:demoStamp("2026-05-05","10:15"),who:"MT",text:"ready for pickup"},
+        {time:demoStamp("2026-05-05","09:20"),who:"MT",text:"product ordered"},
+        {time:demoStamp("2026-05-05","08:40"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:302,
+      createdAt:demoISO("2026-05-04","08:20"),
+      item:"blue construction paper",
+      name:"Hannah",
+      room:"2",
+      status:"product ordered",
+      eta:"fri",
+      closed:false,
+      updatedAt:demoISO("2026-05-05","13:18"),
+      events:[
+        {time:demoStamp("2026-05-05","13:18"),who:"MT",text:"product ordered / eta → fri"},
+        {time:demoStamp("2026-05-04","12:10"),who:"MT",text:"product identified"},
+        {time:demoStamp("2026-05-04","08:20"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:303,
+      createdAt:demoISO("2026-05-01","11:10"),
+      item:"laminating sheets",
+      name:"Sarah",
+      room:"4",
+      status:"product identified",
+      eta:"",
+      closed:false,
+      updatedAt:demoISO("2026-05-01","13:00"),
+      events:[
+        {time:demoStamp("2026-05-01","13:00"),who:"MT",text:"product identified"},
+        {time:demoStamp("2026-05-01","11:10"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:304,
+      createdAt:demoISO("2026-04-28","09:00"),
+      item:"clear sensory bottles",
+      name:"Nat",
+      room:"studio",
+      status:"financial approvals",
+      eta:"",
+      closed:false,
+      updatedAt:demoISO("2026-04-29","09:15"),
+      events:[
+        {time:demoStamp("2026-04-29","09:15"),who:"MT",text:"sent for financial approval"},
+        {time:demoStamp("2026-04-28","14:10"),who:"MT",text:"product identified"},
+        {time:demoStamp("2026-04-28","09:00"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:305,
+      createdAt:demoISO("2026-04-22","08:00"),
+      item:"markers",
+      name:"Leah",
+      room:"art",
+      status:"teacher purchased themselves",
+      eta:"",
+      closed:true,
+      updatedAt:demoISO("2026-04-25","15:35"),
+      events:[
+        {time:demoStamp("2026-04-25","15:35"),who:"Leah",text:"teacher purchased themselves"},
+        {time:demoStamp("2026-04-22","08:00"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:306,
+      createdAt:demoISO("2026-04-15","07:40"),
+      item:"watercolor paper",
+      name:"Mina",
+      room:"6",
+      status:"fulfilled",
+      eta:"",
+      closed:true,
+      updatedAt:demoISO("2026-04-30","11:05"),
+      events:[
+        {time:demoStamp("2026-04-30","11:05"),who:"MT",text:"fulfilled"},
+        {time:demoStamp("2026-04-29","09:00"),who:"MT",text:"ready for pickup"},
+        {time:demoStamp("2026-04-19","13:40"),who:"MT",text:"product ordered"},
+        {time:demoStamp("2026-04-15","07:40"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:307,
+      createdAt:demoISO("2026-04-10","07:20"),
+      item:"extra wipes",
+      name:"Jo",
+      room:"1",
+      status:"no longer needed",
+      eta:"",
+      closed:true,
+      updatedAt:demoISO("2026-04-18","14:50"),
+      events:[
+        {time:demoStamp("2026-04-18","14:50"),who:"Jo",text:"no longer needed"},
+        {time:demoStamp("2026-04-10","07:20"),who:"teacher",text:"created"}
+      ]
+    },
+    {
+      id:308,
+      createdAt:demoISO("2026-04-03","10:30"),
+      item:"replacement dollhouse people",
+      name:"Avery",
+      room:"3",
+      status:"fulfilled",
+      eta:"",
+      closed:true,
+      updatedAt:demoISO("2026-04-08","12:20"),
+      events:[
+        {time:demoStamp("2026-04-08","12:20"),who:"MT",text:"fulfilled"},
+        {time:demoStamp("2026-04-07","08:50"),who:"MT",text:"ready for pickup"},
+        {time:demoStamp("2026-04-04","09:30"),who:"MT",text:"product ordered"},
+        {time:demoStamp("2026-04-03","10:30"),who:"teacher",text:"created"}
+      ]
+    }
+  ];
+}
+function load(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw){
+    const data = seed();
+    localStorage.setItem(KEY, JSON.stringify(data));
+    return data;
+  }
+  try{return JSON.parse(raw)}catch(e){return seed()}
+}
+
+function save(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+  render();
+}
+
+function nextId(data){
+  return Math.max(200, ...data.map(x => Number(x.id) || 0)) + 1;
+}
+
+function addEvent(order, who, text){
+  order.events = order.events || [];
+  order.events.unshift(ev(who,text));
+  order.updatedAt = nowISO();
+}
+
+function createdTime(order){
+  return new Date(order.createdAt || order.updatedAt || 0).getTime();
+}
+
+function isToday(order){
+  return (order.updatedAt || "").slice(0,10) === today();
+}
+
+function isStale(order){
+  if(order.closed) return false;
+  const days = (Date.now() - new Date(order.updatedAt).getTime()) / 86400000;
+  return days >= 3;
+}
+
+function lastShort(order){
+  if(!order.events || !order.events[0]) return "—";
+  return order.events[0].time.replace(", 2026","").replace(":00 "," ");
+}
+
+function dateCell(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString([], {
+    month:"short",
+    day:"numeric",
+    hour:"numeric",
+    minute:"2-digit"
+  }).replace(":00 "," ");
+}
+
+function compactDuration(ms){
+  if(!Number.isFinite(ms) || ms < 0) return "—";
+  const min = Math.floor(ms / 60000);
+  if(min < 1) return "<1m";
+  if(min < 60) return min + "m";
+  const hr = Math.floor(min / 60);
+  if(hr < 48) return hr + "h";
+  const day = Math.floor(hr / 24);
+  if(day < 60) return day + "d";
+  const mo = Math.floor(day / 30);
+  return mo + "mo";
+}
+
+function dayCount(ms){
+  if(!Number.isFinite(ms) || ms < 0) return 0;
+  return Math.max(0, Math.floor(ms / 86400000));
+}
+
+function ageFlag(order){
+  const start = new Date(order.createdAt || order.updatedAt || 0).getTime();
+  const updated = new Date(order.updatedAt || order.createdAt || 0).getTime();
+  const now = Date.now();
+
+  if(order.status === "fulfilled"){
+    const days = dayCount(updated - start);
+    return `<span class="ageflag age-good">${days}d</span>`;
+  }
+
+  if(order.status === "teacher purchased themselves"){
+    const days = dayCount(updated - start);
+    return `<span class="ageflag age-bad">${days}d teacher purchased</span>`;
+  }
+
+  if(order.status === "no longer needed"){
+    const days = dayCount(updated - start);
+    return `<span class="ageflag age-bad">${days}d no need</span>`;
+  }
+
+  if(order.status === "denied"){
+    const days = dayCount(updated - start);
+    return `<span class="ageflag age-bad">${days}d denied</span>`;
+  }
+
+  const daysOpen = dayCount(now - start);
+  if(isStale(order)) return `<span class="ageflag age-bad">${daysOpen}d stale</span>`;
+  return `<span class="ageflag age-open">${daysOpen}d</span>`;
+}
+
+function statusClass(order){
+  if(order.closed && order.status !== "fulfilled") return "s-closed";
+  const s = (order.status || "new").split(" ")[0];
+  return "s-" + s;
+}
+
+function updateRoomFilter(data){
+  const select = document.getElementById("roomFilter");
+  if(!select) return;
+  const rooms = [...new Set(data.map(o => String(o.room || "").trim()).filter(Boolean))]
+    .sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"}));
+  const current = roomFilter;
+  select.innerHTML = `<option value="">all</option>` + rooms.map(r => `<option value="${escAttr(r)}">${esc(r)}</option>`).join("");
+  select.value = rooms.includes(current) ? current : "";
+  if(select.value !== current) roomFilter = select.value;
+}
+
+function render(){
+  const data = load();
+  updateRoomFilter(data);
+  const open = data.filter(o => !o.closed);
+  const closed = data.filter(o => o.closed);
+  const fulfilled = data.filter(o => o.status === "fulfilled").length;
+  const noNeed = data.filter(o => o.status === "no longer needed").length;
+  const purchased = data.filter(o => o.status === "teacher purchased themselves").length;
+  const completedTotal = fulfilled + noNeed + purchased;
+  const successRate = completedTotal ? Math.round((fulfilled / completedTotal) * 100) : 0;
+
+  document.getElementById("openCount").textContent = open.length;
+  document.getElementById("closedCount").textContent = closed.length;
+  document.getElementById("staleCount").textContent = open.filter(isStale).length;
+  document.getElementById("todayCount").textContent = data.filter(isToday).length;
+
+  document.getElementById("mOpen").textContent = open.length;
+  document.getElementById("mNeglect").textContent = open.filter(isStale).length;
+  document.getElementById("mFulfilled").textContent = fulfilled;
+  document.getElementById("mNoNeed").textContent = noNeed;
+  document.getElementById("mPurchased").textContent = purchased;
+  document.getElementById("mSuccess").textContent = successRate + "%";
+
+  document.getElementById("adminPanel").classList.toggle("open", adminMode);
+  document.getElementById("lockState").textContent = mtUnlocked ? "mt unlocked" : "mt locked";
+  document.getElementById("adminBtn").classList.toggle("active", adminMode);
+  document.getElementById("queueBtn").classList.toggle("active", !adminMode);
+
+  const tbody = document.getElementById("queue");
+  tbody.innerHTML = "";
+
+  const filteredData = roomFilter ? data.filter(o => String(o.room || "").trim() === roomFilter) : data;
+  const list = filteredData.slice().sort((a,b) => {
+    const createdDiff = createdTime(b) - createdTime(a);
+    if(createdDiff !== 0) return createdDiff;
+    return (Number(b.id) || 0) - (Number(a.id) || 0);
+  });
+
+  for(const order of list){
+    const row = document.createElement("tr");
+    row.className = "req";
+    row.innerHTML = `
+      <td><button class="icon" data-toggle="${order.id}">+</button></td>
+      <td class="id">#${order.id}</td>
+      <td class="item">${esc(order.item)}</td>
+      <td>${esc(order.name)}</td>
+      <td>${esc(order.room)}</td>
+      <td class="status ${statusClass(order)}">${esc(order.status)}</td>
+      <td>${esc(order.eta || "—")}</td>
+      <td class="tiny">${esc(dateCell(order.createdAt || order.updatedAt))}</td>
+      <td class="tiny">${esc(lastShort(order))}</td>
+      <td>${ageFlag(order)}</td>
+      <td><button class="icon" data-mt="${order.id}">...</button></td>
+    `;
+
+    const detail = document.createElement("tr");
+    detail.className = "details";
+    detail.dataset.detail = order.id;
+    detail.innerHTML = `
+      <td colspan="11">
+        <div class="detailsbox">
+          <div class="grid">
+            ${teacherPanel(order)}
+            ${mtPanel(order)}
+            ${historyPanel(order)}
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+    tbody.appendChild(detail);
+  }
+
+  wire();
+}
+
+function teacherPanel(order){
+  if(order.closed){
+    return `
+      <div class="panel">
+        <h2>teacher</h2>
+        <div class="tiny">closed</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="panel">
+      <h2>teacher update</h2>
+      <div class="controlgrid">
+        <select data-teacher="${order.id}">
+          ${teacherActions.map(a => `<option>${esc(a)}</option>`).join("")}
+        </select>
+        <button class="warn" data-teacher-save="${order.id}">save</button>
+      </div>
+    </div>
+  `;
+}
+
+function mtPanel(order){
+  if(order.closed){
+    return `
+      <div class="panel">
+        <h2>mt</h2>
+        <div class="tiny">closed</div>
+      </div>
+    `;
+  }
+  if(!mtUnlocked){
+    return `
+      <div class="panel" data-mt-panel="${order.id}">
+        <h2>mt</h2>
+        <button data-unlock="${order.id}">unlock</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="panel" data-mt-panel="${order.id}">
+      <h2>mt</h2>
+      <div class="controlgrid">
+        <select data-status="${order.id}">
+          ${statuses.map(s => `<option ${s === order.status ? "selected" : ""}>${esc(s)}</option>`).join("")}
+        </select>
+        <input data-eta="${order.id}" value="${escAttr(order.eta || "")}" placeholder="eta">
+        <input class="wide" data-note="${order.id}" placeholder="comment">
+        <button class="save wide good" data-mt-save="${order.id}">save</button>
+      </div>
+    </div>
+  `;
+}
+
+function historyPanel(order){
+  return `
+    <div class="panel">
+      <h2>history</h2>
+      <div class="history">
+        ${(order.events || []).map(e => `
+          <div class="event">
+            <span class="time">${esc(e.time)}</span>
+            <span class="who">${esc(e.who)}</span>
+            ${esc(e.text)}
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function wire(){
+  document.querySelectorAll("[data-toggle]").forEach(btn => {
+    btn.onclick = () => {
+      const detail = document.querySelector(`[data-detail="${btn.dataset.toggle}"]`);
+      detail.classList.toggle("open");
+      btn.textContent = detail.classList.contains("open") ? "-" : "+";
+    };
+  });
+
+  document.querySelectorAll("[data-mt]").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.mt;
+      if(!mtUnlocked && !askPassword("MT unlock")) return;
+      mtUnlocked = true;
+      const detail = document.querySelector(`[data-detail="${id}"]`);
+      detail.classList.add("open");
+      render();
+      setTimeout(() => {
+        const detail2 = document.querySelector(`[data-detail="${id}"]`);
+        if(detail2) detail2.classList.add("open");
+      }, 0);
+    };
+  });
+
+  document.querySelectorAll("[data-unlock]").forEach(btn => {
+    btn.onclick = () => {
+      if(!askPassword("MT unlock")) return;
+      mtUnlocked = true;
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-teacher-save]").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.teacherSave);
+      const action = document.querySelector(`[data-teacher="${id}"]`).value;
+      if(!action) return;
+      const data = load();
+      const order = data.find(o => Number(o.id) === id);
+      order.status = action;
+      order.closed = true;
+      addEvent(order, order.name, action);
+      save(data);
+    };
+  });
+
+  document.querySelectorAll("[data-mt-save]").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.mtSave);
+      const status = document.querySelector(`[data-status="${id}"]`).value;
+      const eta = document.querySelector(`[data-eta="${id}"]`).value.trim();
+      const freeNote = document.querySelector(`[data-note="${id}"]`).value.trim();
+      const data = load();
+      const order = data.find(o => Number(o.id) === id);
+      const changes = [];
+
+      if(status !== order.status){
+        order.status = status;
+        changes.push("status → " + status);
+      }
+      if(eta !== (order.eta || "")){
+        order.eta = eta;
+        changes.push("eta → " + (eta || "—"));
+      }
+      if(freeNote){
+        changes.push(freeNote);
+      }
+      if(status === "fulfilled" || status === "denied"){
+        order.closed = true;
+      }
+      if(changes.length === 0){
+        changes.push("checked");
+      }
+      addEvent(order, "MT", changes.join(" / "));
+      save(data);
+    };
+  });
+}
+
+function askPassword(label){
+  const p = prompt(label + " password");
+  if(p === PASSWORD) return true;
+  if(p !== null) alert("wrong password");
+  return false;
+}
+
+document.getElementById("newForm").onsubmit = e => {
+  e.preventDefault();
+  const name = document.getElementById("name").value.trim();
+  const room = document.getElementById("room").value.trim();
+  const item = document.getElementById("item").value.trim();
+  if(!name || !room || !item) return;
+
+  const data = load();
+  const order = {
+    id: nextId(data),
+    createdAt: nowISO(),
+    item, name, room,
+    status:"new",
+    eta:"",
+    closed:false,
+    updatedAt:nowISO(),
+    events:[]
+  };
+  addEvent(order, name, "created");
+  data.unshift(order);
+  save(data);
+  e.target.reset();
+};
+
+document.getElementById("adminBtn").onclick = () => {
+  if(!adminMode){
+    if(!askPassword("admin")) return;
+    adminMode = true;
+  } else {
+    adminMode = false;
+  }
+  render();
+};
+
+document.getElementById("queueBtn").onclick = () => {
+  adminMode = false;
+  render();
+};
+
+document.getElementById("resetBtn").onclick = () => {
+  localStorage.setItem(KEY, JSON.stringify(seed()));
+  render();
+};
+
+document.getElementById("roomFilter").onchange = e => {
+  roomFilter = e.target.value;
+  render();
+};
+
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+function escAttr(s){return esc(s).replace(/"/g,"&quot;");}
+
+render();
+</script>
+</body>
+</html>
