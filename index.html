@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Product Queue - Raw Mockup v10</title>
+<title>Product Queue - Raw Mockup v11</title>
 <style>
   :root{
     --bg:#090c10;
@@ -910,9 +910,100 @@ function closeMobileDrawer(){
 function openMobileDrawer(order){
   const {overlay, drawer} = ensureMobileDrawer();
   const content = drawer.querySelector("[data-mobile-content]");
+  activeMobileOrderId = Number(order.id);
   content.innerHTML = `<div class="grid">${teacherPanel(order)}${mtPanel(order)}${historyPanel(order)}</div>`;
   drawer.classList.add("open");
   overlay.classList.add("open");
+  wireMobileDrawer();
+}
+
+function wireMobileDrawer(){
+  const drawer = document.getElementById("mobileDrawer");
+  const overlay = document.getElementById("mobileDrawerOverlay");
+  if(!drawer) return;
+
+  if(overlay) overlay.onclick = () => closeMobileDrawer();
+
+  const closeBtn = drawer.querySelector("[data-mobile-close]");
+  if(closeBtn) closeBtn.onclick = () => closeMobileDrawer();
+
+  drawer.querySelectorAll("[data-unlock]").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.unlock);
+      if(!askPassword("MT unlock")) return;
+      mtUnlocked = true;
+      activeMobileOrderId = id;
+      render();
+    };
+  });
+
+  drawer.querySelectorAll("[data-teacher-save]").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.teacherSave);
+      const select = drawer.querySelector(`[data-teacher="${id}"]`);
+      if(!select) return;
+
+      const action = select.value;
+      if(!action) return;
+
+      const data = load();
+      const order = data.find(o => Number(o.id) === id);
+      if(!order) return;
+
+      order.status = action;
+      order.closed = true;
+      addEvent(order, order.name, action);
+      save(data);
+      closeMobileDrawer();
+    };
+  });
+
+  drawer.querySelectorAll("[data-mt-save]").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.mtSave);
+      const statusEl = drawer.querySelector(`[data-status="${id}"]`);
+      const etaEl = drawer.querySelector(`[data-eta="${id}"]`);
+      const noteEl = drawer.querySelector(`[data-note="${id}"]`);
+
+      if(!statusEl || !etaEl || !noteEl) return;
+
+      const status = statusEl.value;
+      const eta = etaEl.value.trim();
+      const freeNote = noteEl.value.trim();
+
+      const data = load();
+      const order = data.find(o => Number(o.id) === id);
+      if(!order) return;
+
+      const changes = [];
+
+      if(status !== order.status){
+        order.status = status;
+        changes.push("status → " + status);
+      }
+
+      if(eta !== (order.eta || "")){
+        order.eta = eta;
+        changes.push("eta → " + (eta || "—"));
+      }
+
+      if(freeNote){
+        changes.push(freeNote);
+      }
+
+      if(status === "fulfilled" || status === "denied"){
+        order.closed = true;
+      }
+
+      if(changes.length === 0){
+        changes.push("checked");
+      }
+
+      addEvent(order, "MT", changes.join(" / "));
+      save(data);
+      closeMobileDrawer();
+    };
+  });
 }
 
 function wire(){
