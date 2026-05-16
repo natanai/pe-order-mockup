@@ -90,17 +90,28 @@
     background:#0b0f14;
   }
   .submit{
-    background:var(--panel);
-    padding:6px;
-    margin-bottom:8px;
+    background:linear-gradient(180deg,#18222d 0%, #11161d 100%);
+    border:1px solid var(--blue);
+    box-shadow:0 0 0 1px rgba(88,166,255,.18), 0 8px 20px rgba(0,0,0,.35);
+    padding:12px;
+    margin-bottom:12px;
   }
+  .submit-title{
+    margin:0 0 8px;
+    font-size:11px;
+    color:var(--blue);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .queue-region.hidden{display:none;}
   .submit form{
     display:grid;
-    grid-template-columns:140px 80px minmax(220px,1fr) 52px;
-    gap:4px;
+    grid-template-columns:180px 120px minmax(280px,1fr) 110px;
+    gap:8px;
+    align-items:center;
   }
   @media(max-width:720px){
-    .submit form{grid-template-columns:1fr 70px}
+    .submit form{grid-template-columns:1fr 95px}
     #item{grid-column:1 / -1}
     .submit button{grid-column:1 / -1}
   }
@@ -349,6 +360,7 @@
 
 <main class="wrap main">
   <section class="submit">
+    <p class="submit-title">submit order request</p>
     <form id="newForm" autocomplete="off">
       <input id="name" placeholder="name" required>
       <input id="room" placeholder="room" required>
@@ -369,6 +381,7 @@
     <div class="tiny">admin view highlights neglected open orders</div>
   </section>
 
+  <section id="queueRegion" class="queue-region">
   <div class="stats">
     <span>open <b id="openCount">0</b></span>
     <span>closed <b id="closedCount">0</b></span>
@@ -414,6 +427,7 @@
     <button id="resetBtn">reset demo</button>
     <span class="tiny"> reloads fake example rows</span>
   </div>
+  </section>
 </main>
 
 <script>
@@ -421,6 +435,7 @@ const KEY = "productQueueRawMock.v7";
 const PASSWORD = "22";
 let mtUnlocked = false;
 let adminMode = false;
+let queueVisible = false;
 let roomFilter = "";
 const isMobileDetails = window.matchMedia("(max-width: 760px)");
 let activeMobileOrderId = null;
@@ -741,7 +756,9 @@ function render(){
   document.getElementById("adminPanel").classList.toggle("open", adminMode);
   document.getElementById("lockState").textContent = mtUnlocked ? "mt unlocked" : "mt locked";
   document.getElementById("adminBtn").classList.toggle("active", adminMode);
-  document.getElementById("queueBtn").classList.toggle("active", !adminMode);
+  document.getElementById("queueBtn").classList.toggle("active", queueVisible);
+  document.getElementById("queueBtn").textContent = queueVisible ? "hide queue" : "show queue";
+  document.getElementById("queueRegion").classList.toggle("hidden", !queueVisible);
 
   const tbody = document.getElementById("queue");
   tbody.innerHTML = "";
@@ -1158,6 +1175,7 @@ document.getElementById("adminBtn").onclick = () => {
   if(!adminMode){
     if(!askPassword("admin")) return;
     adminMode = true;
+    queueVisible = true;
   } else {
     adminMode = false;
   }
@@ -1165,7 +1183,8 @@ document.getElementById("adminBtn").onclick = () => {
 };
 
 document.getElementById("queueBtn").onclick = () => {
-  adminMode = false;
+  queueVisible = !queueVisible;
+  if(queueVisible) adminMode = false;
   render();
 };
 
